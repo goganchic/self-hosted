@@ -22,6 +22,41 @@ Thinking of not managing this yourself? Check out the [SaaS migration docs](http
 
 Please visit [our documentation](https://develop.sentry.dev/self-hosted/) for everything else.
 
+### Installation over proxy
+
+In some enterprise setups there are no direct Internet connection. It's possible to access particular hosts through HTTP Proxy. To install Sentry with Self-Hosted Sentry nightly you should make some preparations:
+
+Asume that installation is running on the Linux, http://proxy:3128 is a proxy address and `127.0.0.0/8` is the only network that should be accessed without proxy.
+
+Set `http_proxy`, `https_proxy` and `no_proxy` variables in `/etc/environment` file.
+
+To make `docker pull` command respect proxy create `/etc/systemd/system/docker.service.d/http-proxy.conf` file with such contents:
+
+```
+[Service]
+Environment="HTTP_PROXY=http://proxy:3128"
+Environment="HTTPS_PROXY=http://proxy:3128"
+Environment="NO_PROXY=127.0.0.0/8"
+```
+
+Run `systemctl daemon-reload` and restart Docker with `systemctl restart docker.service`.
+
+To add proxy env variables into Docker containers create `~/.docker/config.json` with such contents:
+
+```json
+{
+ "proxies":
+ {
+   "default":
+   {
+     "httpProxy": "http://proxy:3128",
+     "httpsProxy": "http://proxy:3128",
+     "noProxy": "127.0.0.0/8"
+   }
+ }
+}
+```
+
 ### Customize DotEnv (.env) file
 
 Environment specific configurations can be done in the `.env.custom` file. It will be located in the root directory of the Sentry installation.
